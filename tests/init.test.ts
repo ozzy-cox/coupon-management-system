@@ -1,0 +1,3 @@
+describe('jest init test', () => {
+  //
+})

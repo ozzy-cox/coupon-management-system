@@ -1,0 +1,4 @@
+temp/*
+src/migrations/*
+src/generated/*
+dist

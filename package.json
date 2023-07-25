@@ -1,21 +1,24 @@
 {
-  "name": "leaderboard-server",
+  "name": "coupon-management-system",
   "version": "1.0.0",
-  "description": "Server-side application for a game leaderboard",
+  "description": "coupon-management-system",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "lint": "eslint . --ext .ts",
     "test": "node --no-warnings --experimental-vm-modules  node_modules/jest/bin/jest.js --runInBand",
     "dev": "node --loader ts-paths-esm-loader --es-module-specifier-resolution=node src/index.ts",
     "tstest": "tsc --project tsconfig.build.json -d --noEmit",
-    "build": "tsc --project tsconfig.build.json -d"
+    "build": "tsc --project tsconfig.build.json -d && tsc-alias -p tsconfig.build.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@mikro-orm/reflection": "^5.7.13",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/ioredis-mock": "^8.2.2",
     "@types/jest": "^29.5.1",
     "@types/node": "^20.1.4",
     "@types/uuid": "^9.0.1",
@@ -28,11 +31,20 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "ts-paths-esm-loader": "^1.4.3",
-    "typescript": "^5.0.4"
+    "tsc-alias": "^1.8.7",
+    "typescript": "^5.0.4",
+    "@types/lodash-es": "^4.17.8"
   },
   "dependencies": {
+    "@mikro-orm/core": "^5.7.13",
+    "@mikro-orm/postgresql": "^5.7.13",
+    "@mikro-orm/sqlite": "^5.7.13",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "ioredis": "^5.3.2",
+    "ioredis-mock": "^8.8.1",
+    "lodash-es": "^4.17.21",
+    "mikro-orm-cache-adapter-redis": "^3.2.0",
     "uuid": "^9.0.0"
   }
 }

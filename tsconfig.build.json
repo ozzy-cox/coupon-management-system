@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/tests/**"
+    ],
+    "tsc-alias": {
+        "verbose": true,
+        "resolveFullPaths": true,
+    }
+}
