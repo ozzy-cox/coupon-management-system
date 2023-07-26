@@ -1,3 +1,0 @@
-describe('jest init test', () => {
-  //
-})

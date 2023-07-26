@@ -13,7 +13,7 @@ export enum DiscountType {
 
 export interface ICoupon extends Base {
   couponCode: string
-  couponType?: CouponType
+  couponType?: CouponType | null
   discountAmount: number
   discountType: DiscountType
   expiryDate: Date

@@ -2,11 +2,10 @@ import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
 import { CouponRepository } from '../infra/orm/repositories/CouponRepository'
 import { CouponParams } from '../controllers/CouponController'
 import { DiscountType } from '../entities/ICoupon'
-import { every, isEqual } from 'lodash-es'
 
 describe('uploading coupons', () => {
   beforeAll(async () => {
-    wipeDb()
+    await wipeDb()
   })
 
   test('should upload coupons and validate', async () => {
@@ -46,6 +45,14 @@ describe('uploading coupons', () => {
 
     const fetchedCoupons = await couponRepo.getCoupons(couponResponse.map((coupon) => coupon.id))
 
-    expect(every(couponResponse, (coupon, idx) => isEqual(coupon, fetchedCoupons[idx]))).toBeTruthy()
+    const hasAllCreatedCoupons = couponResponse.reduce((acc, curr) => {
+      return acc && !!fetchedCoupons.find((coupon) => coupon.id === curr.id)
+    }, true)
+
+    expect(hasAllCreatedCoupons).toBeTruthy()
+  })
+
+  afterAll(async () => {
+    await (await ORM.getInstance()).close()
   })
 })

@@ -3,11 +3,12 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { SqliteDriver } from '@mikro-orm/sqlite'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
 import { Coupon } from './coupon/infra/orm/models/Coupon'
+import { UserCoupon } from './coupon/infra/orm/models/UserCoupon'
 // TODO Change driver to postgres
 
 export default {
   metadataProvider: TsMorphMetadataProvider,
-  entities: [Coupon],
+  entities: [Coupon, UserCoupon],
   dbName: 'test.db',
   type: 'sqlite', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
   resultCache: {
