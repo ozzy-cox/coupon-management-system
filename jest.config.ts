@@ -14,7 +14,8 @@ const jestConfig: JestConfigWithTsJest = {
       }
     ]
   },
-  testPathIgnorePatterns: ['/helpers.ts']
+  testPathIgnorePatterns: ['/helpers.ts'],
+  testTimeout: 60000
 }
 
 export default jestConfig

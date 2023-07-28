@@ -1,6 +1,6 @@
 import { CouponParams } from '@/coupon/controllers/CouponController'
-import { CouponType, ICoupon } from '@/coupon/entities/ICoupon'
-import { ICouponRepository } from '@/coupon/repositories/ICouponRepository'
+import { ICoupon } from '@/coupon/entities/ICoupon'
+import { ICouponRepository } from '@/coupon/interfaces/ICouponRepository'
 import { EntityManager, SqlEntityRepository } from '@mikro-orm/sqlite'
 import { Coupon } from '../models/Coupon'
 import { IUserCoupon } from '@/coupon/entities/IUserCoupon'
@@ -17,6 +17,14 @@ export class CouponRepository implements ICouponRepository {
     this.userCouponRepository = em.getRepository(UserCoupon)
     this.em = em
   }
+
+  async removeExpiredCoupons(): Promise<ICoupon[]> {
+    const expiredCoupons = await this.couponRepository.find({ expiryDate: { $lt: new Date() } })
+    await this.em.remove(expiredCoupons)
+    await this.em.flush()
+    return expiredCoupons
+  }
+
   async getCoupons(couponIds: string[]): Promise<ICoupon[]> {
     return await this.couponRepository.find({ id: { $in: couponIds } }, { cache: true })
   }

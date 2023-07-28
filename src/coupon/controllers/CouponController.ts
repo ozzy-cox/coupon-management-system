@@ -18,3 +18,7 @@ export const redeemCoupon = async (req: Request, res: Response) => {
 export const validateCoupon = async (req: Request, res: Response) => {
   /** */
 }
+
+export const queryCouponRequestStatus = async (req: Request, res: Response) => {
+  /** */
+}

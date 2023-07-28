@@ -2,7 +2,7 @@ import { CouponParams } from '@/coupon/controllers/CouponController'
 import { CouponType, DiscountType, ICoupon } from '@/coupon/entities/ICoupon'
 import { IUserCoupon } from '@/coupon/entities/IUserCoupon'
 import { Base } from '@/shared/infra/models/Base'
-import { Entity, Enum, OneToOne, Property, Rel } from '@mikro-orm/core'
+import { Cascade, Entity, Enum, OneToOne, Property, Rel } from '@mikro-orm/core'
 import { Coupon } from './Coupon'
 import { UserIdType } from '@/types'
 
@@ -14,7 +14,7 @@ export class UserCoupon extends Base implements IUserCoupon {
   @Property()
   usages: number
 
-  @OneToOne()
+  @OneToOne({ cascade: [Cascade.REMOVE], orphanRemoval: true })
   coupon!: Rel<Coupon>
 
   @Property({ hidden: true })

@@ -10,4 +10,5 @@ export interface ICouponRepository {
   assignCoupon(userId: UserIdType, couponType: ICoupon['couponType']): Promise<IUserCoupon>
   getUserCoupons(userId: UserIdType, couponIds: ICoupon['id'][]): Promise<IUserCoupon[]>
   updateCouponUsages(userId: UserIdType, couponId: ICoupon['id']): Promise<IUserCoupon>
+  removeExpiredCoupons(): Promise<ICoupon[]> // Return purged coupons
 }

@@ -1,21 +1,17 @@
 import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
-import { CouponRepository } from '../infra/orm/repositories/CouponRepository'
 import { CouponType, DiscountType, ICoupon } from '../entities/ICoupon'
 import { CouponParams } from '../controllers/CouponController'
-import { before } from 'node:test'
-import { CouponService, CouponStatus } from '../services/CouponService'
+import { CouponStatus } from '../services/CouponService'
+import { mockContext } from '@/mockContext'
+import { Context } from '@/context'
 
 describe('Assigning a coupon to a user', () => {
   let couponResponse: ICoupon[]
-  let couponRepo: CouponRepository
-  let couponService: CouponService
+  let context: Context
   const userId = 'userA-1'
 
   beforeAll(async () => {
-    const orm = await ORM.getInstance()
-    const em = await orm.em.fork()
-    couponRepo = new CouponRepository(em)
-    couponService = new CouponService(couponRepo)
+    context = await mockContext()
   })
 
   beforeEach(async () => {
@@ -48,42 +44,42 @@ describe('Assigning a coupon to a user', () => {
       }
     ]
 
-    couponResponse = await couponRepo.persistCoupons(coupons)
+    couponResponse = await context.couponRepository.persistCoupons(coupons)
   })
 
   test('should create and assign a coupon to a user', async () => {
-    const assignedCoupon = await couponRepo.assignCoupon(userId, null)
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, null)
 
     expect(assignedCoupon.coupon).toEqual(couponResponse[0])
   })
 
   test('should attempt to assign a coupon to a user when type of coupon is not available', async () => {
     const assignCoupon = async () => {
-      await couponRepo.assignCoupon(userId, CouponType.MEGADEAL)
+      await context.couponRepository.assignCoupon(userId, CouponType.MEGADEAL)
     }
     await expect(assignCoupon).rejects.toThrow()
   })
 
   test('should validate an assigned coupon', async () => {
-    const assignedCoupon = await couponRepo.assignCoupon(userId, null)
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, null)
 
-    const isValid = await couponService.validateCoupon(userId, assignedCoupon.coupon.id)
+    const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
 
     expect(isValid).toBeTruthy()
   })
 
   test('should attempt to validate an expired coupon', async () => {
-    const assignedCoupon = await couponRepo.assignCoupon(userId, CouponType.STANDARD) // Only standard type coupon is expired
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.STANDARD) // Only standard type coupon is expired
 
-    const isValid = await couponService.validateCoupon(userId, assignedCoupon.coupon.id)
+    const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
 
     expect(isValid).toEqual(CouponStatus.EXPIRED)
   })
 
   test('should attempt to validate an exhausted coupon', async () => {
-    const assignedCoupon = await couponRepo.assignCoupon(userId, CouponType.FREE) // Free coupon is already exhausted
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.FREE) // Free coupon is already exhausted
 
-    const isValid = await couponService.validateCoupon(userId, assignedCoupon.coupon.id)
+    const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
 
     expect(isValid).toEqual(CouponStatus.EXHAUSTED)
   })

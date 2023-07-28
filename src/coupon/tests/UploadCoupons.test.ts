@@ -2,17 +2,17 @@ import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
 import { CouponRepository } from '../infra/orm/repositories/CouponRepository'
 import { CouponParams } from '../controllers/CouponController'
 import { DiscountType } from '../entities/ICoupon'
+import { Context } from '@/context'
+import { mockContext } from '@/mockContext'
 
 describe('uploading coupons', () => {
+  let context: Context
   beforeAll(async () => {
+    context = await mockContext()
     await wipeDb()
   })
 
   test('should upload coupons and validate', async () => {
-    const orm = await ORM.getInstance()
-    const em = await orm.em.fork()
-    const couponRepo = new CouponRepository(em)
-
     const now = new Date()
 
     const coupons: CouponParams[] = [
@@ -41,12 +41,12 @@ describe('uploading coupons', () => {
       }
     ]
 
-    const couponResponse = await couponRepo.persistCoupons(coupons)
+    const couponResponse = await context.couponRepository.persistCoupons(coupons)
 
-    const fetchedCoupons = await couponRepo.getCoupons(couponResponse.map((coupon) => coupon.id))
+    const fetchedCoupons = await context.couponRepository.getCoupons(couponResponse.map((coupon) => coupon.id))
 
     const hasAllCreatedCoupons = couponResponse.reduce((acc, curr) => {
-      return acc && !!fetchedCoupons.find((coupon) => coupon.id === curr.id)
+      return acc && !!fetchedCoupons.find((coupon) => coupon && coupon.id === curr.id)
     }, true)
 
     expect(hasAllCreatedCoupons).toBeTruthy()
