@@ -5,13 +5,14 @@
 
 
 #### TODO
-1. Create runners for processes
-1. Create cron runner for removal of expired nodes (every week)
-1. Populate controllers
-1. MEGADEAL impl
-1. How to run guide
-1. Run cron task for removing unused coupons periodically.
+1. Test runners for processes
+2. Populate controllers
 
-1. Change the logger to log to a file instead of console !!
-1. Log batching
-1. Add middleware logger for all endpoints
+3. MEGADEAL impl
+   1. Save result to redis with expiration
+   2. Create endpoint for collecting created coupons
+4. How to run guide
+
+6. Change the logger to log to a file instead of console !!
+7. Log batching
+8. Add middleware logger for all endpoints

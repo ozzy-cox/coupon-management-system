@@ -1,5 +1,6 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import cors from 'cors'
+import { schedule } from 'node-cron'
 import { Context } from './context'
 import { uploadCoupons } from './coupon/controllers/CouponController'
 import { rateLimitedCoupons } from './config'
@@ -7,6 +8,7 @@ import { createCouponWorker } from './coupon/workers/RateLimitedCouponWorker'
 import { TokenRateLimiter } from './coupon/infra/rate-limiter/RateLimiter'
 import { couponQueues } from './coupon/infra/queue/CouponQueue'
 import { mockContext } from './mockContext'
+import { purgeExpiredCoupons } from './coupon/tasks/PurgeExpiredCoupons'
 
 export const app: Express = express()
 
@@ -29,6 +31,11 @@ Object.entries(couponQueues).forEach(([key, queue]) => {
     }),
     context
   )
+})
+
+// Run cron task for purging expired coupons, every week
+schedule('0 0 * * 0', () => {
+  purgeExpiredCoupons(context.couponRepository)
 })
 
 app.use(cors())

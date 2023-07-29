@@ -2,23 +2,25 @@
 ```mermaid
 flowchart TD
     Client(((User)))
-    Gateway[/Gateway\]
+    Gateway[/Gateway<br>Load Balancer\]
     Database[("Database")]
     Cache{"Cache"}
+    CronWorker(("Cron<br>Worker")) --"Purges expired coupons"--> Database
 
     subgraph Server
     direction TB
-        Service1["Service 1"]    
-        Service2["Service 2"]    
-        Service3["Service n"]    
+        Service1["Service 1"]
+        Service2["Service 2"]
+        Service3["Service n"]
+        UserService["User Service(s)"]
     end
-
+    
     subgraph Workers
         direction TB
-        Worker1(("Queue<br>Worker 1"))  
+        Worker1(("Queue<br>Worker 1"))
         Worker2(("Queue<br>Worker 2"))
-        Workern(("Queue<br>Worker n"))  
-        WorkerMega(("MEGADEAL Worker"))
+        Workern(("Queue<br>Worker n"))
+        WorkerMega(("MEGADEAL<br>Worker"))
     end
 
     subgraph Queues
@@ -26,7 +28,7 @@ flowchart TD
         Queue1{{"Queue 1"}}
         Queue2{{"Queue 2"}}
         Queuen{{"Queue n"}}
-        QueueMega{{"MEGADEAL Queue"}}
+        QueueMega{{"MEGADEAL<br>Queue"}}
     end
     
     Client --> Gateway
@@ -65,21 +67,27 @@ flowchart TD
     participant Server
     participant Queue
     participant Worker
+    participant Cache
     
     Client ->> Server: Request to get a MEGADEAL coupon.
+    alt there are too many people in the queue (>=100)
+    Server ->> Client: Creates a task in queue to handle coupon request.
+    else there are less than 10 seconds worth of requests (<100) in the queue
     Server ->> Queue: Creates a task in queue to handle coupon request.
     Queue ->> Server: Returns task id
     Server ->> Client: Returns task id to track the process of coupon request.
+    end
     Queue ->> Worker: Takes tasks out of the queue as rate limiter allows.
+    Worker ->> Cache: Save the task result to be collected.
     loop Linear backoff (1,2,3,4 seconds) 4 times, total of 10 seconds.
-        Client --> Server: Is the task done yet ? Sends id of task.
-        Server --> Worker: Is the task done yet ? with id.
+        Client ->> Server: Is the task done yet ? Sends id of task.
+        Server ->> Cache: Is the task done yet ? with id.
         alt task is done
-            Worker ->> Server: Done, return assigned coupon.
+            Cache ->> Server: Done, return assigned coupon.
             Server ->> Client: Done, return assigned coupon.
         else task is waiting
-            Worker ->> Server: Task is not done yet
-            Server ->> Client: Task is not done yet
+            Cache ->> Server: Result for coupon allocation not found
+            Server ->> Client: Task is not done yet, or will not be done.
         end
     end
 ```
@@ -97,3 +105,6 @@ flowchart TD
   * Bee-queue is used for queueing tasks. (Instead of RabbitMQ etc.)
   * Queue workers are implemented using **worker_threads**. (Instead of seperate microservices)
   * Logs are written to file. (Instead of ElasticSearch, where some analysis could be made.)
+  * Rate limiter and id generator is embedded in code, Ideally these would be seperate components to allow for better scalability, concurrency.
+  * Load balancer/gateway was not implemented.
+
