@@ -1,7 +1,8 @@
 import { UserIdType } from '@/types'
-import { CouponType, ICoupon } from '../entities/ICoupon'
+import { CouponType } from '../entities/ICoupon'
 
 export type CouponRequest = {
+  trackingId: string
   userId: UserIdType
   couponType: CouponType
 }

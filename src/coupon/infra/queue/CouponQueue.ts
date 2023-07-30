@@ -36,20 +36,24 @@ export class CouponQueueBee implements IRateLimitedCouponQueue {
   }
 }
 
-const context = await mockContext()
-
-export const couponQueues: Record<string, IRateLimitedCouponQueue> = Object.keys(rateLimitedCoupons).reduce(
-  (acc, curr) => {
-    return {
-      ...acc,
-      [curr]: new CouponQueueBee(
-        new BeeQueue(curr, {
-          redis: context.cache,
-          isWorker: false
-        } as QueueSettings),
-        rateLimitedCoupons[curr]
-      )
+let couponQueues: Record<string, IRateLimitedCouponQueue>
+export class CouponQueues {
+  public static async getInstance(): Promise<typeof couponQueues> {
+    if (!couponQueues) {
+      const context = await mockContext()
+      couponQueues = Object.keys(rateLimitedCoupons).reduce((acc, curr) => {
+        return {
+          ...acc,
+          [curr]: new CouponQueueBee(
+            new BeeQueue(curr, {
+              redis: context.cache,
+              isWorker: false
+            } as QueueSettings),
+            rateLimitedCoupons[curr]
+          )
+        }
+      }, {} as Record<string, IRateLimitedCouponQueue>)
     }
-  },
-  {} as Record<string, IRateLimitedCouponQueue>
-)
+    return couponQueues
+  }
+}

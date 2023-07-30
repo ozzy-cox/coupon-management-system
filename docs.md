@@ -1,4 +1,5 @@
 ## System Architecture
+> **_NOTE:_** This document contains mermaidJS charts, a version of this document rendered properly can be viewed at the link. https://github.com/ozzy-cox/coupon-management-system/blob/main/docs.md
 ```mermaid
 flowchart TD
     Client(((User)))

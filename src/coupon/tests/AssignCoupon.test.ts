@@ -2,26 +2,27 @@ import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
 import { CouponType, DiscountType, ICoupon } from '../entities/ICoupon'
 import { CouponParams } from '../controllers/CouponController'
 import { CouponStatus } from '../services/CouponService'
-import { mockContext } from '@/mockContext'
 import { Context } from '@/context'
+import { useTestContext } from '@/shared/tests/hooks/useMockContext'
 
 describe('Assigning a coupon to a user', () => {
-  let couponResponse: ICoupon[]
+  const getContext = useTestContext()
   let context: Context
+  let couponResponse: ICoupon[]
   const userId = 'userA-1'
 
-  beforeAll(async () => {
-    context = await mockContext()
+  beforeAll(() => {
+    context = getContext()
   })
 
   beforeEach(async () => {
-    await wipeDb()
     const now = new Date()
 
     const coupons: CouponParams[] = [
       {
         couponCode: '01A',
         discountAmount: 20,
+        couponType: CouponType.NONE,
         discountType: DiscountType.FLAT,
         expiryDate: new Date(now.getTime() + 1),
         maxUsages: 5
@@ -48,7 +49,7 @@ describe('Assigning a coupon to a user', () => {
   })
 
   test('should create and assign a coupon to a user', async () => {
-    const assignedCoupon = await context.couponRepository.assignCoupon(userId, null)
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.NONE)
 
     expect(assignedCoupon.coupon).toEqual(couponResponse[0])
   })
@@ -61,7 +62,7 @@ describe('Assigning a coupon to a user', () => {
   })
 
   test('should validate an assigned coupon', async () => {
-    const assignedCoupon = await context.couponRepository.assignCoupon(userId, null)
+    const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.NONE)
 
     const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
 

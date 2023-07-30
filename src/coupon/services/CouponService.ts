@@ -1,14 +1,16 @@
 import { UserIdType } from '@/types'
 import { CouponParams } from '../controllers/CouponController'
-import { CouponType, ICoupon } from '../entities/ICoupon'
+import { ICoupon } from '../entities/ICoupon'
 import { ICouponRepository } from '../interfaces/ICouponRepository'
 import { IUserCoupon } from '../entities/IUserCoupon'
-import { LogUsedCoupon } from '@/shared/infra/logging/Loggers'
 import { UpdateCreatedCouponCounts, UpdateUsedCouponCounts } from '../helpers/UpdateCouponCounts'
 import { rateLimitedCoupons } from '@/config'
+import { LogUsedCoupon } from '@/shared/infra/logging/LogDecorators'
+import { v4 } from 'uuid'
+import { CouponQueues } from '../infra/queue/CouponQueue'
+import { HTTPError } from '../helpers/HTTPError'
 
 export enum CouponStatus {
-  VALID = 'VALID',
   INVALID = 'INVALID',
   EXPIRED = 'EXPIRED',
   EXHAUSTED = 'EXHAUSTED'
@@ -23,14 +25,21 @@ export class CouponService {
   }
 
   async requestCoupon(userId: UserIdType, couponType: ICoupon['couponType']) {
+    const couponQueues = await CouponQueues.getInstance()
     if (couponType && Object.keys(rateLimitedCoupons).includes(couponType)) {
-      // TODO Check rate limiting, queue the task if necessary
+      const trackingId = v4()
+      await couponQueues[couponType].push({
+        userId,
+        couponType,
+        trackingId
+      })
+      return trackingId
     } else {
       return this.repository.assignCoupon(userId, couponType)
     }
   }
 
-  async validateCoupon(userId: UserIdType, couponId: ICoupon['id']): Promise<CouponStatus> {
+  async validateCoupon(userId: UserIdType, couponId: ICoupon['id']): Promise<CouponStatus | IUserCoupon> {
     const userCouponResponse = await this.repository.getUserCoupons(userId, [couponId])
     if (userCouponResponse.length > 0) {
       const userCoupon = userCouponResponse[0]
@@ -40,7 +49,7 @@ export class CouponService {
       if (userCoupon.coupon.expiryDate < new Date()) {
         return CouponStatus.EXPIRED
       }
-      return CouponStatus.VALID
+      return userCoupon
     }
     return CouponStatus.INVALID
   }
@@ -49,17 +58,22 @@ export class CouponService {
   @UpdateUsedCouponCounts()
   async redeemCoupon(userId: UserIdType, couponId: ICoupon['id']): Promise<IUserCoupon> {
     const couponValidity = await this.validateCoupon(userId, couponId)
-    if (couponValidity === CouponStatus.VALID) {
+    if (typeof couponValidity === 'object') {
       return await this.repository.updateCouponUsages(userId, couponId)
     } else {
       switch (couponValidity) {
         case CouponStatus.EXPIRED:
-          throw new Error('Coupon expired')
+          throw new HTTPError('Coupon expired', 410)
         case CouponStatus.EXHAUSTED:
-          throw new Error('Coupon exhausted')
+          throw new HTTPError('Coupon exhausted', 429)
         default:
-          throw new Error('Coupon invalid')
+          throw new HTTPError('Coupon invalid', 400)
       }
     }
+  }
+
+  async checkCouponRequestStatus(userId: UserIdType, trackingId: string): Promise<IUserCoupon | undefined> {
+    const result = this.repository.checkCouponRequestStatus(userId, trackingId)
+    return result
   }
 }

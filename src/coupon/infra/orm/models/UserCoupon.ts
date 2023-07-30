@@ -1,5 +1,3 @@
-import { CouponParams } from '@/coupon/controllers/CouponController'
-import { CouponType, DiscountType, ICoupon } from '@/coupon/entities/ICoupon'
 import { IUserCoupon } from '@/coupon/entities/IUserCoupon'
 import { Base } from '@/shared/infra/models/Base'
 import { Cascade, Entity, Enum, OneToOne, Property, Rel } from '@mikro-orm/core'

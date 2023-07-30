@@ -9,3 +9,4 @@ declare global {
 }
 
 export type UserIdType = string
+export type CouponAllocationIdType = string

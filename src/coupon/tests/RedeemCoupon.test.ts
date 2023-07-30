@@ -1,19 +1,19 @@
-import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
 import { CouponType, DiscountType } from '../entities/ICoupon'
 import { CouponParams } from '../controllers/CouponController'
 import { Context } from '@/context'
-import { mockContext } from '@/mockContext'
+import { HTTPError } from '../helpers/HTTPError'
+import { useTestContext } from '@/shared/tests/hooks/useMockContext'
 
 describe('Redeeming coupons', () => {
+  const getContext = useTestContext()
   let context: Context
   const userId = 'userA-1'
 
-  beforeAll(async () => {
-    context = await mockContext()
+  beforeAll(() => {
+    context = getContext()
   })
 
   beforeEach(async () => {
-    await wipeDb()
     const now = new Date()
 
     const coupons: CouponParams[] = [
@@ -55,7 +55,7 @@ describe('Redeeming coupons', () => {
       await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
     }
 
-    await expect(attemptToRedeemExpiredCoupon).rejects.toThrow('Coupon expired')
+    await expect(attemptToRedeemExpiredCoupon).rejects.toThrow(new HTTPError('Coupon expired', 410))
   })
 
   test('should attempt to redeem a coupon that exceeded max usages', async () => {
@@ -68,7 +68,7 @@ describe('Redeeming coupons', () => {
       await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
     }
 
-    await expect(attemptToRedeemExhaustedCoupon).rejects.toThrow('Coupon exhausted')
+    await expect(attemptToRedeemExhaustedCoupon).rejects.toThrow(new HTTPError('Coupon exhausted', 429))
   })
 
   test('should attempt to redeem a coupon that is not assigned to this user', async () => {
@@ -79,10 +79,6 @@ describe('Redeeming coupons', () => {
       await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
     }
 
-    await expect(attemptToRedeemUnauthorizedCoupon).rejects.toThrow('Coupon invalid')
-  })
-
-  afterAll(async () => {
-    await (await ORM.getInstance()).close()
+    await expect(attemptToRedeemUnauthorizedCoupon).rejects.toThrow(new HTTPError('Coupon invalid', 400))
   })
 })

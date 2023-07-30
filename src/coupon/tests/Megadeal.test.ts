@@ -1,28 +1,33 @@
 import { CouponType, DiscountType } from '../entities/ICoupon'
 import { Context } from '@/context'
-import { mockContext } from '@/mockContext'
-import { CouponQueueBee, couponQueues } from '../infra/queue/CouponQueue'
+import { CouponQueueBee, CouponQueues } from '../infra/queue/CouponQueue'
 import { CouponRequestHandler } from '../workers/CouponRequestHandler'
 import { TokenRateLimiter } from '../infra/rate-limiter/RateLimiter'
 import { rateLimitedCoupons } from '@/config'
 import { CouponParams } from '../controllers/CouponController'
 import { v4 } from 'uuid'
-import exp from 'constants'
+import { useTestContext } from '@/shared/tests/hooks/useMockContext'
 
 describe('Using the rate limited coupon queues', () => {
-  let couponQueue: CouponQueueBee
+  const getContext = useTestContext()
   let context: Context
+
+  let couponQueue: CouponQueueBee
   let handler: CouponRequestHandler
   const now = new Date()
   const rateLimitOptions = rateLimitedCoupons[CouponType.MEGADEAL]
   const limiter = new TokenRateLimiter({
-    tokensPerInterval: rateLimitOptions.perSecond,
+    tokensPerInterval: rateLimitOptions.perSecondLimit,
     interval: rateLimitOptions.interval
   })
 
+  beforeAll(() => {
+    context = getContext()
+  })
+
   beforeAll(async () => {
+    const couponQueues = await CouponQueues.getInstance()
     couponQueue = couponQueues.MEGADEAL as CouponQueueBee
-    context = await mockContext()
     handler = new CouponRequestHandler(couponQueue, limiter, context)
   })
 
@@ -33,11 +38,13 @@ describe('Using the rate limited coupon queues', () => {
   test('should add requests to the queue', async () => {
     couponQueue.push({
       userId: 'userA-1',
-      couponType: CouponType.MEGADEAL
+      couponType: CouponType.MEGADEAL,
+      trackingId: v4()
     })
     couponQueue.push({
       userId: 'userA-1',
-      couponType: CouponType.MEGADEAL
+      couponType: CouponType.MEGADEAL,
+      trackingId: v4()
     })
     expect(await couponQueue.len()).toBe(2)
   })
@@ -45,11 +52,14 @@ describe('Using the rate limited coupon queues', () => {
   test('should pop requests out of the queue', async () => {
     await couponQueue.push({
       userId: 'userA-1',
-      couponType: CouponType.MEGADEAL
+      couponType: CouponType.MEGADEAL,
+
+      trackingId: v4()
     })
     await couponQueue.push({
       userId: 'userA-1',
-      couponType: CouponType.MEGADEAL
+      couponType: CouponType.MEGADEAL,
+      trackingId: v4()
     })
     await couponQueue.pop()
     await couponQueue.pop()
@@ -74,18 +84,21 @@ describe('Using the rate limited coupon queues', () => {
       })
     }
 
+    const trackingId = v4()
+
     // Add coupon requests
     for (let i = 0; i < requestCount; i++) {
       await couponQueue.push({
         userId: 'userA-1',
-        couponType: CouponType.MEGADEAL
+        couponType: CouponType.MEGADEAL,
+        trackingId
       })
     }
 
     await context.couponService.saveCoupons(couponsToSave)
 
     await handler.handle()
-    expect(await couponQueue.len()).toBe(requestCount - rateLimitOptions.perSecond)
+    expect(await couponQueue.len()).toBe(requestCount - rateLimitOptions.perSecondLimit)
 
     // Simulate the worker for approx. 3 more seconds
     for (let i = 0; i < 30; i++) {

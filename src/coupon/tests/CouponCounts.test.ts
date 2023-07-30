@@ -1,23 +1,22 @@
 import { Context } from '@/context'
-import { mockContext } from '@/mockContext'
 import { CouponType, DiscountType } from '../entities/ICoupon'
 import { CouponParams } from '../controllers/CouponController'
-import { wipeDb } from '@/shared/tests/mocks/orm'
 import assert from 'assert'
 import { createdCouponCacheKey, usedCouponCacheKey } from '@/config'
+import { useTestContext } from '@/shared/tests/hooks/useMockContext'
 
 describe('Counting created and used coupons', () => {
+  const getContext = useTestContext()
   let context: Context
   let coupons: CouponParams[]
   const now = new Date()
   const userId = 'userA-1'
 
-  beforeAll(async () => {
-    context = await mockContext()
+  beforeAll(() => {
+    context = getContext()
   })
 
   beforeEach(async () => {
-    await wipeDb()
     coupons = [
       {
         couponCode: '01A',
@@ -72,6 +71,7 @@ describe('Counting created and used coupons', () => {
   test('should update used coupon counts', async () => {
     const assignedCoupon = await context.couponService.requestCoupon(userId, CouponType.STANDARD)
     assert(assignedCoupon)
+    assert(typeof assignedCoupon != 'string')
 
     const countsBeforeUsingCoupons = await context.cache.get(`${usedCouponCacheKey}-${CouponType.STANDARD}`)
     expect(countsBeforeUsingCoupons).toBe(null)

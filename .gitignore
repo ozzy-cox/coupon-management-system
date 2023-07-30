@@ -4,3 +4,7 @@ dist
 build
 temp
 test.db
+log.txt
+app_log.txt
+app_debug.txt
+notes.md

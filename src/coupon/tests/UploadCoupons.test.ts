@@ -1,15 +1,14 @@
-import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
-import { CouponRepository } from '../infra/orm/repositories/CouponRepository'
 import { CouponParams } from '../controllers/CouponController'
-import { DiscountType } from '../entities/ICoupon'
+import { CouponType, DiscountType } from '../entities/ICoupon'
 import { Context } from '@/context'
-import { mockContext } from '@/mockContext'
+import { useTestContext } from '@/shared/tests/hooks/useMockContext'
 
 describe('uploading coupons', () => {
+  const getContext = useTestContext()
   let context: Context
-  beforeAll(async () => {
-    context = await mockContext()
-    await wipeDb()
+
+  beforeAll(() => {
+    context = getContext()
   })
 
   test('should upload coupons and validate', async () => {
@@ -19,6 +18,7 @@ describe('uploading coupons', () => {
       {
         couponCode: '01A',
         discountAmount: 20,
+        couponType: CouponType.NONE,
         discountType: DiscountType.FLAT,
         expiryDate: new Date(now.getTime() + 1),
         maxUsages: 5
@@ -27,14 +27,15 @@ describe('uploading coupons', () => {
       {
         couponCode: '01B',
         discountAmount: 30,
+        couponType: CouponType.NONE,
         discountType: DiscountType.PERCENTAGE,
         expiryDate: new Date(now.getTime() + 5),
         maxUsages: 1
       },
-
       {
         couponCode: '01C',
         discountAmount: 15,
+        couponType: CouponType.NONE,
         discountType: DiscountType.PERCENTAGE,
         expiryDate: new Date(now.getTime() + 3),
         maxUsages: 2
@@ -50,9 +51,5 @@ describe('uploading coupons', () => {
     }, true)
 
     expect(hasAllCreatedCoupons).toBeTruthy()
-  })
-
-  afterAll(async () => {
-    await (await ORM.getInstance()).close()
   })
 })

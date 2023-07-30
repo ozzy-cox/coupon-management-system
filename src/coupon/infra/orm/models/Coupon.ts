@@ -10,7 +10,7 @@ export class Coupon extends Base implements ICoupon {
   couponCode: string
 
   @Enum(() => CouponType)
-  couponType?: CouponType | null | undefined
+  couponType: CouponType
 
   @Property()
   discountAmount: number
@@ -26,6 +26,9 @@ export class Coupon extends Base implements ICoupon {
 
   @OneToOne({ mappedBy: 'coupon', orphanRemoval: true })
   assignedUser!: Rel<UserCoupon>
+
+  @Property()
+  allocatedUntil?: Date
 
   constructor({ couponCode, couponType, discountAmount, discountType, expiryDate, maxUsages }: CouponParams) {
     super()
