@@ -35,7 +35,7 @@ const LOGGERS = {
 }
 const LOG_FILE_NAME = './log.txt'
 
-const IS_DEBUG = false
+const IS_DEBUG = true
 
 const MAX_COUPON_UPLOAD = 50000
 
