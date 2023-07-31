@@ -1,4 +1,5 @@
 import { app } from '@/app'
+import { MAX_COUPON_UPLOAD } from '@/config'
 import { CouponParams } from '@/coupon/controllers/CouponController'
 import { CouponType, DiscountType } from '@/coupon/entities/ICoupon'
 import { useTestContext } from '@/shared/tests/hooks/useMockContext'
@@ -12,7 +13,7 @@ describe('Upload controller', () => {
     const response = await request(app)
       .post('/upload')
       .send({
-        coupons: range(50001).map(
+        coupons: range(MAX_COUPON_UPLOAD + 1).map(
           () =>
             ({
               couponCode: v4(),
