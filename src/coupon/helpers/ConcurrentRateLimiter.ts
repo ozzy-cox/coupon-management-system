@@ -1,3 +1,6 @@
+import { rateLimitedCoupons } from '@/config'
+import { CouponType } from '../entities/ICoupon'
+
 // TODO This is another mock, should use redis with atomic operations to support concurrent nodes.
 export class ConcurrentRateLimiter {
   count: number
@@ -15,5 +18,22 @@ export class ConcurrentRateLimiter {
 
   decrement(): void {
     this.count--
+  }
+
+  clear(): void {
+    this.count = 0
+  }
+}
+
+let concurrentRateLimiters: Record<CouponType, ConcurrentRateLimiter>
+
+export class RateLimiters {
+  public static getInstance() {
+    if (!concurrentRateLimiters) {
+      concurrentRateLimiters = Object.entries(rateLimitedCoupons).reduce((acc, [key, value]) => {
+        return { ...acc, [key]: new ConcurrentRateLimiter(value.concurrentLimit) }
+      }, {} as Record<CouponType, ConcurrentRateLimiter>)
+    }
+    return concurrentRateLimiters
   }
 }

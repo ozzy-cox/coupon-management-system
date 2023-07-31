@@ -1,13 +1,14 @@
 import { MAX_COUPON_UPLOAD } from '@/config'
 import { CouponType } from '@/coupon/entities/ICoupon'
 import { validate } from '@/coupon/middlewares/ValidationError'
+import { RequestHandler } from 'express'
 import { body, query } from 'express-validator'
 
-const uploadValidationRules = () => {
+const uploadValidationRules = (): RequestHandler[] => {
   return [body('coupons').isArray().isLength({ min: 1, max: MAX_COUPON_UPLOAD }), validate]
 }
 
-const requestNewValidationRules = () => {
+const requestNewValidationRules = (): RequestHandler[] => {
   return [
     query('userId').isString().notEmpty(),
     query('couponType')
@@ -18,15 +19,15 @@ const requestNewValidationRules = () => {
   ]
 }
 
-const redeemValidationRules = () => {
+const redeemValidationRules = (): RequestHandler[] => {
   return [body('userId').notEmpty(), body('couponCode').notEmpty(), validate]
 }
 
-const validateValidationRules = () => {
+const validateValidationRules = (): RequestHandler[] => {
   return [query('userId').notEmpty(), query('couponCode').notEmpty(), validate]
 }
 
-const requestStatusValidationRules = () => {
+const requestStatusValidationRules = (): RequestHandler[] => {
   return [query('userId').notEmpty(), query('trackingId').notEmpty(), validate]
 }
 

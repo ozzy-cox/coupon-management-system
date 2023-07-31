@@ -1,6 +1,6 @@
 import { CouponAllocationIdType, UserIdType } from '@/types'
 import { CouponParams } from '../controllers/CouponController'
-import { ICoupon } from '../entities/ICoupon'
+import { CouponType, ICoupon } from '../entities/ICoupon'
 import { IUserCoupon } from '../entities/IUserCoupon'
 
 export interface ICouponRepository {
@@ -18,4 +18,5 @@ export interface ICouponRepository {
   ): Promise<CouponAllocationIdType>
   getNextAvailableCouponByType(couponType: ICoupon['couponType']): Promise<ICoupon>
   checkCouponRequestStatus(userId: UserIdType, trackingId: CouponAllocationIdType): Promise<IUserCoupon | undefined>
+  getCouponCounts(couponType: ICoupon['couponType']): Promise<number>
 }

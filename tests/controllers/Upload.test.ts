@@ -11,8 +11,8 @@ describe('Upload controller', () => {
   test('should not accept more than 50000 coupons', async () => {
     const response = await request(app)
       .post('/upload')
-      .send(
-        range(50001).map(
+      .send({
+        coupons: range(50001).map(
           () =>
             ({
               couponCode: v4(),
@@ -23,7 +23,7 @@ describe('Upload controller', () => {
               maxUsages: 1
             } as CouponParams)
         )
-      )
+      })
 
     expect(response.statusCode).toBe(413)
   })

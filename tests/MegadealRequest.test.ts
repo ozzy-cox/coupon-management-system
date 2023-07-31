@@ -23,8 +23,6 @@ describe('Requesting a rate limited coupon (megadeal)', () => {
   })
 
   beforeAll(async () => {
-    context = await mockContext()
-
     const couponQueues = await CouponQueues.getInstance()
     couponQueue = couponQueues.MEGADEAL as CouponQueueBee
     context = await mockContext()
@@ -38,6 +36,16 @@ describe('Requesting a rate limited coupon (megadeal)', () => {
   test('should make a request for a megadeal coupon and get a tracking id', async () => {
     const userId = 'userA-1'
 
+    await context.couponService.saveCoupons([
+      {
+        couponCode: v4(),
+        couponType: CouponType.MEGADEAL,
+        discountAmount: 20,
+        discountType: DiscountType.FLAT,
+        expiryDate: new Date(now.getTime() + 1000),
+        maxUsages: 5
+      }
+    ])
     const trackingId = await context.couponService.requestCoupon(userId, CouponType.MEGADEAL)
 
     expect(isString(trackingId)).toBeTruthy()
@@ -52,7 +60,7 @@ describe('Requesting a rate limited coupon (megadeal)', () => {
         couponType: CouponType.MEGADEAL,
         discountAmount: 20,
         discountType: DiscountType.FLAT,
-        expiryDate: new Date(now.getTime() + 1),
+        expiryDate: new Date(now.getTime() + 1000),
         maxUsages: 5
       }
     ])

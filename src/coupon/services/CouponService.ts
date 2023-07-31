@@ -27,6 +27,18 @@ export class CouponService {
   async requestCoupon(userId: UserIdType, couponType: ICoupon['couponType']) {
     const couponQueues = await CouponQueues.getInstance()
     if (couponType && Object.keys(rateLimitedCoupons).includes(couponType)) {
+      const couponOptions = rateLimitedCoupons[couponType]
+      const queue = couponQueues[couponType]
+      const length = await queue.len()
+      if (length >= couponOptions.canWait * couponOptions.perSecondLimit) {
+        throw new HTTPError('Too many users in the queue, try again later', 429)
+      }
+
+      const countOfRequestedCoupons = await this.repository.getCouponCounts(couponType)
+      if (length >= countOfRequestedCoupons) {
+        throw new HTTPError('Not enough coupons remaining, try again later', 429)
+      }
+
       const trackingId = v4()
       await couponQueues[couponType].push({
         userId,
@@ -39,7 +51,10 @@ export class CouponService {
     }
   }
 
-  async validateCoupon(userId: UserIdType, couponId: ICoupon['id']): Promise<CouponStatus | IUserCoupon> {
+  async validateCoupon(
+    userId: UserIdType,
+    couponId: ICoupon['id']
+  ): Promise<CouponStatus | IUserCoupon> {
     const userCouponResponse = await this.repository.getUserCoupons(userId, [couponId])
     if (userCouponResponse.length > 0) {
       const userCoupon = userCouponResponse[0]
@@ -72,7 +87,10 @@ export class CouponService {
     }
   }
 
-  async checkCouponRequestStatus(userId: UserIdType, trackingId: string): Promise<IUserCoupon | undefined> {
+  async checkCouponRequestStatus(
+    userId: UserIdType,
+    trackingId: string
+  ): Promise<IUserCoupon | undefined> {
     const result = this.repository.checkCouponRequestStatus(userId, trackingId)
     return result
   }

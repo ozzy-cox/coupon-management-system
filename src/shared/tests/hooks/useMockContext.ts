@@ -11,6 +11,11 @@ export const useTestContext = () => {
 
   beforeEach(async () => {
     await wipeDb()
+    const couponQueues = await CouponQueues.getInstance()
+    await couponQueues.MEGADEAL.clear()
+    await Object.values(context.concurrentRequestRateLimiters).forEach((limiter) => {
+      limiter.clear()
+    })
   })
 
   afterAll(async () => {

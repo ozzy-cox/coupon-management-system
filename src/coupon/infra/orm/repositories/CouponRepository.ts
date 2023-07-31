@@ -154,4 +154,21 @@ export class CouponRepository implements ICouponRepository {
 
     return trackingId
   }
+
+  async getCouponCounts(couponType: CouponType): Promise<number> {
+    return await this.couponRepository.count({
+      $or: [
+        {
+          allocatedUntil: {
+            $lt: new Date()
+          }
+        },
+        {
+          allocatedUntil: null
+        }
+      ],
+      couponType: couponType,
+      assignedUser: null
+    })
+  }
 }

@@ -3,10 +3,7 @@ import { CouponRepository } from './coupon/infra/orm/repositories/CouponReposito
 import { CouponService } from './coupon/services/CouponService'
 import { ORM } from './shared/tests/mocks/orm'
 import { Context } from './context'
-import { rateLimitedCoupons } from './config'
-import { ConcurrentRateLimiter } from './coupon/helpers/ConcurrentRateLimiter'
-import { CouponType } from './coupon/entities/ICoupon'
-import { CouponQueues } from './coupon/infra/queue/CouponQueue'
+import { RateLimiters } from './coupon/helpers/ConcurrentRateLimiter'
 
 export const mockContext = async () => {
   const orm = await ORM.getInstance()
@@ -14,10 +11,7 @@ export const mockContext = async () => {
   const em = await orm.em.fork()
   const couponRepository = new CouponRepository(em, redis)
 
-  const concurrentRequestRateLimiters = Object.entries(rateLimitedCoupons).reduce((acc, [key, value]) => {
-    return { ...acc, [key]: new ConcurrentRateLimiter(value.concurrentLimit) }
-  }, {} as Record<CouponType, ConcurrentRateLimiter>)
-
+  const concurrentRequestRateLimiters = RateLimiters.getInstance()
   return {
     cache: redis,
     orm,

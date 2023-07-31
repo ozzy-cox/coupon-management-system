@@ -26,15 +26,19 @@ const transports = pino.transport({
         translateTime: true
       }
     },
-    {
-      level: 'info',
-      target: 'pino-http-print',
-      options: {
-        destination: 1,
-        all: true,
-        translateTime: true
-      }
-    }
+    ...(IS_DEBUG
+      ? [
+          {
+            level: 'info',
+            target: 'pino-http-print',
+            options: {
+              destination: 1,
+              all: true,
+              translateTime: true
+            }
+          }
+        ]
+      : [])
   ]
 })
 export const logger = pino(transports)

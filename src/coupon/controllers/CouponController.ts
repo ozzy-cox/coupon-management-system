@@ -35,12 +35,14 @@ export const requestNewCoupon = async (req: Request, res: Response, next: NextFu
     if (couponType in rateLimitedCoupons) {
       const rateLimiter = context.concurrentRequestRateLimiters[couponType]
       if (rateLimiter.tryIncrement()) {
-        // TODO Return proper value
-        console.log('asdgasdg')
-        res.send('accepted')
+        const trackingId = await context.couponService.requestCoupon(userId, couponType)
+        res.json({
+          data: {
+            trackingId
+          }
+        })
       } else {
-        res.status(429)
-        res.send('not accepted')
+        next(new HTTPError('Rate limit reached', 429))
       }
     } else {
       const coupon = await context.couponService.requestCoupon(userId, couponType)
@@ -95,7 +97,14 @@ export const validateCoupon = async (req: Request, res: Response, next: NextFunc
 
 export const queryCouponRequestStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    //
+    const context = req.context
+    const { userId, trackingId } = req.body
+    const requestStatus = await context.couponService.checkCouponRequestStatus(userId, trackingId)
+    res.json({
+      data: {
+        status: requestStatus
+      }
+    })
   } catch (e) {
     next(e)
   }
