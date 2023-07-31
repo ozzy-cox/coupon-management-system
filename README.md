@@ -27,7 +27,7 @@ To test types:
 
 #### API
 
-##### ~Upload~
+##### Upload
 ```
 POST /upload HTTP/1.1
 Host: localhost:8000
@@ -65,7 +65,7 @@ returns
 }
 ```
 
-##### ~RequestNewCoupon~
+##### RequestNewCoupon
 
 ```
 GET /request-new?userId=user1&couponType=STANDARD HTTP/1.1
@@ -99,7 +99,7 @@ returns
 }
 ```
 
-##### ~RedeemCoupon~
+##### RedeemCoupon
 ```
 POST /redeem HTTP/1.1
 Host: localhost:8000
@@ -139,7 +139,7 @@ returns
 }
 ```
 
-##### ~ValidateCoupon~
+##### ValidateCoupon
 ```
 GET /validate?userId=user1&couponCode=1 HTTP/1.1
 Host: localhost:8000
