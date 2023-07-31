@@ -1,8 +1,15 @@
 ### How to
 A built version of the project is included in the zip file inside **dist** directory
+I used pnpm v.8 with node version 20.
+Also tested it with npm v8.19 and node version 16
 ```
 To run:
     node dist/index.js
+    
+To install:
+    npm install --legacy-peer-deps
+    or
+    pnpm i
 
 To build:
     npm run build
