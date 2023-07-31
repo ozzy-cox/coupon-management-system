@@ -49,7 +49,9 @@ describe('Counting created and used coupons', () => {
   })
 
   test('should update created coupon counts', async () => {
-    const countsBeforeUploadingCoupons = await context.cache.get(`${createdCouponCacheKey}-${CouponType.STANDARD}`)
+    const countsBeforeUploadingCoupons = await context.cache.get(
+      `${createdCouponCacheKey}-${CouponType.STANDARD}`
+    )
 
     expect(countsBeforeUploadingCoupons).toBe(String(coupons.length))
 
@@ -64,7 +66,9 @@ describe('Counting created and used coupons', () => {
       }
     ])
 
-    const countsAfterUploadingCoupons = await context.cache.get(`${createdCouponCacheKey}-${CouponType.STANDARD}`)
+    const countsAfterUploadingCoupons = await context.cache.get(
+      `${createdCouponCacheKey}-${CouponType.STANDARD}`
+    )
     expect(countsAfterUploadingCoupons).toBe(String(coupons.length + 1))
   })
 
@@ -73,12 +77,16 @@ describe('Counting created and used coupons', () => {
     assert(assignedCoupon)
     assert(typeof assignedCoupon != 'string')
 
-    const countsBeforeUsingCoupons = await context.cache.get(`${usedCouponCacheKey}-${CouponType.STANDARD}`)
+    const countsBeforeUsingCoupons = await context.cache.get(
+      `${usedCouponCacheKey}-${CouponType.STANDARD}`
+    )
     expect(countsBeforeUsingCoupons).toBe(null)
 
-    await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+    await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.couponCode)
 
-    const countsAfterUsingCoupons = await context.cache.get(`${usedCouponCacheKey}-${CouponType.STANDARD}`)
+    const countsAfterUsingCoupons = await context.cache.get(
+      `${usedCouponCacheKey}-${CouponType.STANDARD}`
+    )
     expect(countsAfterUsingCoupons).toBe(String(1))
   })
 

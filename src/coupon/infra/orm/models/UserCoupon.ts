@@ -1,6 +1,6 @@
 import { IUserCoupon } from '@/coupon/entities/IUserCoupon'
 import { Base } from '@/shared/infra/models/Base'
-import { Cascade, Entity, Enum, OneToOne, Property, Rel } from '@mikro-orm/core'
+import { Cascade, Entity, OneToOne, Property, Rel } from '@mikro-orm/core'
 import { Coupon } from './Coupon'
 import { UserIdType } from '@/types'
 

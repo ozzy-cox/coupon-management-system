@@ -1,5 +1,4 @@
 import { Base } from '@/shared/infra/models/Base'
-import { UserIdType } from '@/types'
 
 export enum CouponType {
   FREE = 'FREE',

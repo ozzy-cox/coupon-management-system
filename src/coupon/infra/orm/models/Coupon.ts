@@ -30,7 +30,14 @@ export class Coupon extends Base implements ICoupon {
   @Property()
   allocatedUntil?: Date
 
-  constructor({ couponCode, couponType, discountAmount, discountType, expiryDate, maxUsages }: CouponParams) {
+  constructor({
+    couponCode,
+    couponType,
+    discountAmount,
+    discountType,
+    expiryDate,
+    maxUsages
+  }: CouponParams) {
     super()
     this.couponCode = couponCode
     this.couponType = couponType

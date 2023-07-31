@@ -8,7 +8,7 @@ import { UserCoupon } from '../models/UserCoupon'
 import { CouponAllocationIdType, UserIdType } from '@/types'
 import Redis from 'ioredis'
 import { rateLimitedCoupons } from '@/config'
-import assert from 'assert'
+import { HTTPError } from '@/coupon/helpers/HTTPError'
 
 export class CouponRepository implements ICouponRepository {
   private couponRepository: SqlEntityRepository<Coupon>
@@ -22,6 +22,7 @@ export class CouponRepository implements ICouponRepository {
     this.em = em
     this.cache = cache
   }
+
   async assignCouponById(userId: string, couponId: string): Promise<IUserCoupon> {
     const assignedCoupon = (await this.getCoupons([couponId]))[0]
     const userCoupon: IUserCoupon = new UserCoupon({ userId })
@@ -40,6 +41,15 @@ export class CouponRepository implements ICouponRepository {
 
   async getCoupons(couponIds: string[]): Promise<ICoupon[]> {
     return await this.couponRepository.find({ id: { $in: couponIds } }, { cache: true })
+  }
+
+  async getCouponsByCode(couponCodes: ICoupon['couponCode'][]): Promise<ICoupon[]> {
+    return await this.couponRepository.find(
+      {
+        couponCode: { $in: couponCodes }
+      },
+      { cache: true }
+    )
   }
 
   async persistCoupons(couponParams: CouponParams[]): Promise<ICoupon[]> {
@@ -67,12 +77,21 @@ export class CouponRepository implements ICouponRepository {
     }
   }
 
-  async getUserCoupons(userId: string, couponIds: string[]): Promise<IUserCoupon[]> {
-    return await this.userCouponRepository.find({ coupon: { id: { $in: couponIds } }, userId })
+  async getUserCoupons(
+    userId: string,
+    couponCodes: ICoupon['couponCode'][]
+  ): Promise<IUserCoupon[]> {
+    return await this.userCouponRepository.find({
+      coupon: { couponCode: { $in: couponCodes } },
+      userId
+    })
   }
 
-  async updateCouponUsages(userId: UserIdType, couponId: string): Promise<IUserCoupon> {
-    const userCouponResponse = await this.getUserCoupons(userId, [couponId])
+  async updateCouponUsages(
+    userId: UserIdType,
+    couponCode: ICoupon['couponCode']
+  ): Promise<IUserCoupon> {
+    const userCouponResponse = await this.getUserCoupons(userId, [couponCode])
     if (userCouponResponse.length) {
       const userCoupon = userCouponResponse[0]
       userCoupon.usages++
@@ -118,9 +137,13 @@ export class CouponRepository implements ICouponRepository {
         couponId: ICoupon['id']
       }
     } else {
-      throw new Error('JSON parsing error with redis result')
+      // TODO order in the queue for user can be returned
+      throw new HTTPError('Coupon not ready yet. Try again later.', 202)
     }
-    const allocatedCouponId = parsed.couponId
+    if ('error' in parsed) {
+      throw new HTTPError('Unexpected error in assigning coupon', 500)
+    }
+    const allocatedCouponId = parsed?.couponId
     if (allocatedCouponId) {
       const userCoupon = await this.assignCouponById(userId, allocatedCouponId)
       return userCoupon

@@ -41,7 +41,10 @@ describe('Redeeming coupons', () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.STANDARD)
     const assignedCouponUsages = assignedCoupon.usages
 
-    const redeemedCoupon = await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+    const redeemedCoupon = await context.couponService.redeemCoupon(
+      userId,
+      assignedCoupon.coupon.couponCode
+    )
 
     const redeemedCouponUsages = redeemedCoupon.usages
 
@@ -52,7 +55,7 @@ describe('Redeeming coupons', () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.FREE)
 
     const attemptToRedeemExpiredCoupon = async () => {
-      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.couponCode)
     }
 
     await expect(attemptToRedeemExpiredCoupon).rejects.toThrow(new HTTPError('Coupon expired', 410))
@@ -61,24 +64,31 @@ describe('Redeeming coupons', () => {
   test('should attempt to redeem a coupon that exceeded max usages', async () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.STANDARD)
     for (let i = 0; i < assignedCoupon.coupon.maxUsages; i++) {
-      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.couponCode)
     }
 
     const attemptToRedeemExhaustedCoupon = async () => {
-      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.couponCode)
     }
 
-    await expect(attemptToRedeemExhaustedCoupon).rejects.toThrow(new HTTPError('Coupon exhausted', 429))
+    await expect(attemptToRedeemExhaustedCoupon).rejects.toThrow(
+      new HTTPError('Coupon exhausted', 429)
+    )
   })
 
   test('should attempt to redeem a coupon that is not assigned to this user', async () => {
     const someOtherUsersId = 'userB-1'
-    const assignedCoupon = await context.couponRepository.assignCoupon(someOtherUsersId, CouponType.FREE)
+    const assignedCoupon = await context.couponRepository.assignCoupon(
+      someOtherUsersId,
+      CouponType.FREE
+    )
 
     const attemptToRedeemUnauthorizedCoupon = async () => {
-      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.id)
+      await context.couponService.redeemCoupon(userId, assignedCoupon.coupon.couponCode)
     }
 
-    await expect(attemptToRedeemUnauthorizedCoupon).rejects.toThrow(new HTTPError('Coupon invalid', 400))
+    await expect(attemptToRedeemUnauthorizedCoupon).rejects.toThrow(
+      new HTTPError('Coupon invalid', 400)
+    )
   })
 })

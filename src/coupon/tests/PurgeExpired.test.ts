@@ -32,10 +32,14 @@ describe('Purging expired coupons', () => {
 
   test('should remove expired coupons', async () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.NONE)
-    expect(await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)).toBe(CouponStatus.EXPIRED)
+    expect(
+      await context.couponService.validateCoupon(userId, assignedCoupon.coupon.couponCode)
+    ).toBe(CouponStatus.EXPIRED)
 
     // context = await mockContext()
     await purgeExpiredCoupons(context.couponRepository)
-    expect(await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)).toBe(CouponStatus.INVALID)
+    expect(await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)).toBe(
+      CouponStatus.INVALID
+    )
   })
 })

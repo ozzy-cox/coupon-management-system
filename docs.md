@@ -54,6 +54,7 @@ flowchart TD
     Workern <--"Results are written to cache"--> Cache
     WorkerMega <--"Redis is used for rate limiting"--> Cache
 ```
+> If you can't view the diagrams, they are included in the source as flowchart.png and sequence.png
 
 #### Assumptions
 * Each coupon can be assigned to a single user.

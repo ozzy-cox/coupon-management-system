@@ -22,11 +22,17 @@ import {
   validateValidationRules
 } from './coupon/controllers/validation/CouponControllerRules'
 import { CouponQueues } from './coupon/infra/queue/CouponQueue'
-import { rateLimitedCoupons } from './config'
+import { IS_DEBUG, rateLimitedCoupons } from './config'
 import { createCouponWorker } from './coupon/workers/RateLimitedCouponWorker'
 import { TokenRateLimiter } from './coupon/infra/rate-limiter/RateLimiter'
+import { wipeDb } from './shared/tests/mocks/orm'
 
 export const app: Express = express()
+
+if (IS_DEBUG) {
+  // For debug mode, clearing the database at every start
+  await wipeDb()
+}
 
 const context = await mockContext()
 const contextMiddleware =

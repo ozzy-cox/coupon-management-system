@@ -19,6 +19,7 @@ export class TokenRateLimiter implements ITokenRateLimiter {
   get tokens(): number {
     return this.limiter.getTokensRemaining()
   }
+
   async removeTokens(amount: number): Promise<number> {
     return await this.limiter.removeTokens(amount)
   }

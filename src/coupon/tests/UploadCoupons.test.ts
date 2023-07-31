@@ -44,7 +44,9 @@ describe('uploading coupons', () => {
 
     const couponResponse = await context.couponRepository.persistCoupons(coupons)
 
-    const fetchedCoupons = await context.couponRepository.getCoupons(couponResponse.map((coupon) => coupon.id))
+    const fetchedCoupons = await context.couponRepository.getCoupons(
+      couponResponse.map((coupon) => coupon.id)
+    )
 
     const hasAllCreatedCoupons = couponResponse.reduce((acc, curr) => {
       return acc && !!fetchedCoupons.find((coupon) => coupon && coupon.id === curr.id)

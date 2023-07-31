@@ -77,22 +77,6 @@ describe('Requesting a rate limited coupon (megadeal)', () => {
     expect(coupon?.userId).toEqual(userId)
   })
 
-  test('should fail to get a tracking id when there are too many people in the queue', async () => {
-    //TODO
-  })
-
-  test('should fail to get a tracking id when there are no megadeal coupons left', async () => {
-    //TODO
-  })
-
-  test('should try multiple times when the queue is long', async () => {
-    //TODO
-  })
-
-  test('should be returning an error from redis when coupon allocation is unsuccessful', async () => {
-    //TODO
-  })
-
   test('should throw an error when more than 5 concurrent requests are sent', async () => {
     for (let i = 0; i < rateLimitedCoupons[CouponType.MEGADEAL].concurrentLimit; i++) {
       await request(app).get('/request-new').query({

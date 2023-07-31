@@ -2,22 +2,14 @@ import { app } from '@/app'
 import { CouponParams } from '@/coupon/controllers/CouponController'
 import { CouponType, DiscountType } from '@/coupon/entities/ICoupon'
 import { useTestContext } from '@/shared/tests/hooks/useMockContext'
+import assert from 'assert'
 import { range } from 'lodash-es'
 import request from 'supertest'
 import { v4 } from 'uuid'
-
-describe('Validating coupons', () => {
+describe('Redeeming coupons', () => {
+  const userId = 'userA-1'
   useTestContext()
-  test('Should be invalid when the coupon code is not found', async () => {
-    const response = await request(app).get('/validate').query({
-      userId: 'userA-1',
-      couponCode: 'th1sC0up0nD035nT3X15T'
-    })
-
-    expect(response.statusCode).toBe(400)
-  })
-
-  test('Should valid when the coupon code is valid', async () => {
+  test('should redeem a coupon', async () => {
     const expiryDate = new Date()
     expiryDate.setDate(expiryDate.getDate() + 100000)
     await request(app)
@@ -35,18 +27,25 @@ describe('Validating coupons', () => {
             } as CouponParams)
         )
       })
+
     const requestedCoupon = await request(app).get('/request-new').query({
-      userId: 'userA-1',
+      userId,
       couponType: CouponType.STANDARD
     })
 
+    assert(requestedCoupon.body?.data?.coupon?.couponCode)
+    let userCoupon = requestedCoupon.body.data
+    expect(userCoupon.usages + 1).toEqual(userCoupon.coupon.maxUsages)
+
     const couponCode = requestedCoupon.body.data.coupon.couponCode
 
-    const response = await request(app).get('/validate').query({
-      userId: 'userA-1',
-      couponCode: couponCode
+    const redeemedResponse = await request(app).post('/redeem').send({
+      userId,
+      couponCode
     })
 
-    expect(response.statusCode).toBe(200)
+    assert(redeemedResponse.body?.data?.coupon?.couponCode)
+    userCoupon = redeemedResponse.body.data
+    expect(userCoupon.usages).toEqual(userCoupon.coupon.maxUsages)
   })
 })

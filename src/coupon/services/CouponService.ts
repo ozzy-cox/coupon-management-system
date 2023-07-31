@@ -40,7 +40,7 @@ export class CouponService {
       }
 
       const trackingId = v4()
-      await couponQueues[couponType].push({
+      await queue.push({
         userId,
         couponType,
         trackingId
@@ -53,9 +53,9 @@ export class CouponService {
 
   async validateCoupon(
     userId: UserIdType,
-    couponId: ICoupon['id']
+    couponCode: ICoupon['couponCode']
   ): Promise<CouponStatus | IUserCoupon> {
-    const userCouponResponse = await this.repository.getUserCoupons(userId, [couponId])
+    const userCouponResponse = await this.repository.getUserCoupons(userId, [couponCode])
     if (userCouponResponse.length > 0) {
       const userCoupon = userCouponResponse[0]
       if (userCoupon.remainingUsages === 0) {

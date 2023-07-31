@@ -5,7 +5,11 @@ import { IRateLimitedCouponQueue } from '../interfaces/IRateLimitedCouponQueue'
 import { ITokenRateLimiter } from '../interfaces/ITokenRateLimiter'
 import { Context } from '@/context'
 
-const createCouponWorker = (queue: IRateLimitedCouponQueue, limiter: ITokenRateLimiter, context: Context) => {
+const createCouponWorker = (
+  queue: IRateLimitedCouponQueue,
+  limiter: ITokenRateLimiter,
+  context: Context
+) => {
   const __filename = fileURLToPath(import.meta.url)
   let rateLimitedCouponWorker: Worker
   if (isMainThread) {

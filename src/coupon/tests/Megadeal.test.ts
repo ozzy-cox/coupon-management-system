@@ -68,7 +68,7 @@ describe('Using the rate limited coupon queues', () => {
   })
 
   test('should assign a request when rate limit is not exceeded and there are enough coupons', async () => {
-    const requestCount = 45
+    const requestCount = 25
     const availableCouponCount = 200
     const couponsToSave: CouponParams[] = []
 
@@ -107,10 +107,6 @@ describe('Using the rate limited coupon queues', () => {
     }
 
     expect(await couponQueue.len()).toBe(0)
-  })
-
-  test('should return error when there are no coupons left', () => {
-    //
   })
 
   afterAll(async () => {

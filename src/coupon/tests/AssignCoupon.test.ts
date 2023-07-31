@@ -1,4 +1,4 @@
-import { ORM, wipeDb } from '@/shared/tests/mocks/orm'
+import { ORM } from '@/shared/tests/mocks/orm'
 import { CouponType, DiscountType, ICoupon } from '../entities/ICoupon'
 import { CouponParams } from '../controllers/CouponController'
 import { CouponStatus } from '../services/CouponService'
@@ -72,7 +72,10 @@ describe('Assigning a coupon to a user', () => {
   test('should attempt to validate an expired coupon', async () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.STANDARD) // Only standard type coupon is expired
 
-    const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
+    const isValid = await context.couponService.validateCoupon(
+      userId,
+      assignedCoupon.coupon.couponCode
+    )
 
     expect(isValid).toEqual(CouponStatus.EXPIRED)
   })
@@ -80,7 +83,10 @@ describe('Assigning a coupon to a user', () => {
   test('should attempt to validate an exhausted coupon', async () => {
     const assignedCoupon = await context.couponRepository.assignCoupon(userId, CouponType.FREE) // Free coupon is already exhausted
 
-    const isValid = await context.couponService.validateCoupon(userId, assignedCoupon.coupon.id)
+    const isValid = await context.couponService.validateCoupon(
+      userId,
+      assignedCoupon.coupon.couponCode
+    )
 
     expect(isValid).toEqual(CouponStatus.EXHAUSTED)
   })

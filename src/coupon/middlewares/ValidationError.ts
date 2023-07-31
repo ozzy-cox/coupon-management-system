@@ -7,7 +7,9 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
     return next()
   }
   const extractedErrors: { [key: string]: string }[] = []
-  errors.array().map((err) => extractedErrors.push({ [(err as FieldValidationError).path]: err.msg }))
+  errors
+    .array()
+    .map((err) => extractedErrors.push({ [(err as FieldValidationError).path]: err.msg }))
 
   return res.status(422).json({
     errors: extractedErrors

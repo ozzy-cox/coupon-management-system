@@ -58,8 +58,8 @@ export const requestNewCoupon = async (req: Request, res: Response, next: NextFu
 export const redeemCoupon = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const context = req.context
-    const { userId, couponId } = req.body
-    const coupon = await context.couponService.redeemCoupon(userId, couponId)
+    const { userId, couponCode } = req.body
+    const coupon = await context.couponService.redeemCoupon(userId, couponCode)
     res.json({
       data: coupon
     })
@@ -71,8 +71,12 @@ export const redeemCoupon = async (req: Request, res: Response, next: NextFuncti
 export const validateCoupon = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const context = req.context
-    const { userId, couponId } = req.body
-    const couponStatus = await context.couponService.validateCoupon(userId, couponId)
+    const { userId, couponCode } = req.query as {
+      userId: UserIdType
+      couponCode: ICoupon['couponCode']
+    }
+
+    const couponStatus = await context.couponService.validateCoupon(userId, couponCode)
     if (typeof couponStatus === 'object') {
       res.json({
         data: couponStatus
@@ -98,11 +102,15 @@ export const validateCoupon = async (req: Request, res: Response, next: NextFunc
 export const queryCouponRequestStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const context = req.context
-    const { userId, trackingId } = req.body
-    const requestStatus = await context.couponService.checkCouponRequestStatus(userId, trackingId)
+    const { userId, trackingId } = req.query as {
+      userId: UserIdType
+      trackingId: string
+    }
+
+    const coupon = await context.couponService.checkCouponRequestStatus(userId, trackingId)
     res.json({
       data: {
-        status: requestStatus
+        coupon
       }
     })
   } catch (e) {
