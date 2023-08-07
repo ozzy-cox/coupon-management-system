@@ -158,5 +158,5 @@ returns
         "code": 429,
         "message": "Coupon exhausted"
     }
-} w
+}
 ```
