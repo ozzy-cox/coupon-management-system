@@ -171,7 +171,6 @@ export class CouponRepository implements ICouponRepository {
         couponId: coupon.id
       }),
       'EX',
-      // HACK explicit null key for coupon type, should be made explicit in the config as well
       rateLimitedCoupons[couponType || 'null'].canWait
     )
 

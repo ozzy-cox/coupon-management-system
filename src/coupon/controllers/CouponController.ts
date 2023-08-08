@@ -35,7 +35,7 @@ export const requestNewCoupon = async (req: Request, res: Response, next: NextFu
     if (couponType in rateLimitedCoupons) {
       const rateLimiter = context.concurrentRequestRateLimiters[couponType]
       if (rateLimiter.tryIncrement()) {
-        const trackingId = await context.couponService.requestCoupon(userId, couponType)
+        const trackingId = await context.couponService.requestRateLimitedCoupon(userId, couponType)
         res.json({
           data: {
             trackingId
